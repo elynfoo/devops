@@ -2,22 +2,37 @@
 # A very simple Flask Hello World app for you to get started with...
 
 from flask import Flask, redirect, render_template, request, url_for
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-# turn off in production
 app.config["DEBUG"] = True
 
-# Specifies that the following function defines the view for the “/” URL,
+comments = []
+
+#configure SQLite in flask_app.py
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/elynfoo/comments.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(4096))
+
+
+#redirect
 @app.route("/")
-def index():
-    return render_template("main_page.html")
+def home():
+    return redirect(url_for("index"))
 
-
-# Flask decides if it’s GET or POST → Flask either shows the page or stores new data → browser reloads to show the updated page.
-# Now Flask can handle both GET (viewing the page) and POST (submitting data).
-@app.route("/contents", methods=["GET", "POST"])
+@app.route("/flaskwebsite", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
-        return render_template("main_page.html", comments=comments)
-    comments.append(request.form["contents"])
-    return redirect(url_for('index'))
+        #return render_template("main_page.html", comments=comments)
+        return render_template("flaskwebsite/main_page.html", comments=Comment.query.all())
+
+    new_comment = Comment(content=request.form["contents"])
+    # comments.append(request.form["contents"])
+    db.session.add(new_comment)
+    db.session.commit()
+    return redirect(url_for("index"))
+

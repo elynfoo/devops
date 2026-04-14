@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Portfolio Dashboard</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background: linear-gradient(90deg, #333, #555);
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        nav ul li a:hover {
+            color: #00aaff;
+        }
+
+        /* Headings */
+        h1 {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2.2em;
+            color: #222;
+        }
+
+        /* Intro Section */
+        .intro-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            background: #1c1c1c;
+            color: #f0f0f0;
+        }
+        .portrait img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 4px solid #00aaff;
+            margin-right: 40px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        .intro-text h1 {
+            margin: 0;
+            font-size: 2em;
+            color: #fff;
+        }
+        .intro-text p {
+            margin: 10px 0;
+            font-size: 1.1em;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        .buttons a {
+            display: inline-block;
+            margin: 10px 15px 0 0;
+            padding: 10px 20px;
+            background: #00aaff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .buttons a:hover {
+            background: #0088cc;
+        }
+
+        /* Dashboard Cards */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 40px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #00aaff;
+        }
+        .card p {
+            margin: 8px 0;
+            color: #555;
+        }
+        .tech-stack {
+            font-size: 14px;
+            color: #777;
+        }
+        .card a {
+            display: inline-block;
+            margin-top: 12px;
+            text-decoration: none;
+            color: #00aaff;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .card a:hover {
+            color: #0088cc;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <ul>
+            <li><a href="/me/python">Python</a></li>
+            <li><a href="/me/linux">Linux</a></li>
+            <li><a href="/me/devops">DevOps</a></li>
+            <li><a href="/me/others">Others</a></li>
+        </ul>
+    </nav>
+
+    <h1>Welcome!</h1> 
+
+    <!-- Intro Section -->
+    <div class="intro-section">
+        <div class="portrait">
+            <img src="your-photo.jpg" alt="Your Portrait">
+        </div>
+        <div class="intro-text">
+            <h1>Hi, I'm Yi</h1>
+            <p>Aspiring Cloud Solutionist specializing in Azure and Cloud technologies.</p>
+            <p>Maintaining Digital Infrastructures that Matter.</p>
+            <div class="buttons">
+                <a href="/about_me">Who am I?</a>
+                <a href="/contact">Get in Touch</a>
+            </div>
+        </div>
+    </div> 
+
+    <!-- Example Dashboard Cards -->
+    <div class="dashboard">
+        <div class="card">
+            <h2>📡 Network Scanner</h2>
+            <p>A simple web scanner app using Cron + Nmap + PHP.</p>
+            <p class="tech-stack">Tech Stack: Ubuntu, Apache2, PHP, Nmap, Cron</p>
+            <a href="/scan">View Project</a>
+        </div>
+        <div class="card">
+            <h2>⚙️ Portfolio Dashboard</h2>
+            <p>Interactive dashboard showcasing projects and monitoring progress.</p>
+            <p class="tech-stack">Tech Stack: Flask, Python, SQLite, Chart.js</p>
+            <a href="/dashboard">View Project</a>
+        </div>
+    </div>
+</body>
+</html>

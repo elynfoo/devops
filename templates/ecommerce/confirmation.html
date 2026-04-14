@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Confirmation</title>
+</head>
+<body>
+    <h1>Thank you for your order, {{ customer.name }}!</h1>
+    <h2>Your purchase has been confirmed. We’ll be in touch soon.</h2>
+    <h3>Order Details:</h3>
+    <ul>
+      {% for item in order.items %}
+        <li>{{ item.product.name }} (x{{ item.quantity }}) - ${{ "%.2f"|format(item.product.price * item.quantity) }}</li>
+      {% endfor %}
+    </ul>
+
+    <p><strong>Total:</strong> ${{ "%.2f"|format(order.total) }}</p>
+
+    <a href="{{ url_for('home') }}">Back to Shop</a>
+
+</body>
+</html>
