@@ -130,6 +130,7 @@
         .card a:hover {
             color: #0088cc;
         }
+}
     </style>
 </head>
 <body>
@@ -143,37 +144,71 @@
         </ul>
     </nav>
 
-    <h1>Welcome!</h1> 
+    <h1>Welcome!</h1>
 
     <!-- Intro Section -->
     <div class="intro-section">
         <div class="portrait">
-            <img src="your-photo.jpg" alt="Your Portrait">
+            <img src="/static/profilepicture.jpg" alt="Your Portrait">
         </div>
         <div class="intro-text">
             <h1>Hi, I'm Yi</h1>
             <p>Aspiring Cloud Solutionist specializing in Azure and Cloud technologies.</p>
             <p>Maintaining Digital Infrastructures that Matter.</p>
             <div class="buttons">
-                <a href="/about_me">Who am I?</a>
-                <a href="/contact">Get in Touch</a>
+                <a href="http://www.linkedin.com/in/yi-ling-foo-659b2a143">@LinkedIn</a>
             </div>
         </div>
-    </div> 
+    </div>
 
     <!-- Example Dashboard Cards -->
+
+        <div class="dashboard">
+          <!-- Python -->
+          <div class="card">
+            <h2>Python Fundamentals</h2>
+            <p>Tech stack Breakdown:</p>
+            <p class="tech-stack">
+                Frontend: HTML, Bootstrap<br>
+                Backend: Flask<br>
+                Database: SQLite<br>
+                Tools: Git, CI/CD</p>
+            <a href="/me/python">Explore</a>
+          </div>
+
+          <!-- Linux -->
+          <div class="card">
+            <h2>Linux Fundamentals</h2>
+            <p>Tech stack Breakdown:</p>
+            <p class="tech-stack">
+              Frontend: Apache2, PHP (HTML/CSS)<br>
+              Backend: Ubuntu/Debian Linux VM, PHP, Nmap<br>
+              Database: PostgreSQL<br>
+              Tools/DevOps: Cron, chmod/chown/groups
+            </p>
+
+            <a href="/me/linux">Explore</a>
+          </div>
+
+          <!-- DevOps -->
+          <div class="card">
+            <h2>DevOps Projects</h2>
+            <p>CI/CD pipelines, containerization, and cloud deployment.</p>
+            <p class="tech-stack">Backend: Node.js, Flask<br>
+                                  Database: PostgreSQL<br>
+                                  DevOps: Docker, Kubernetes<br>
+                                  Hosting: Azure, AWS</p>
+            <a href="/me/devops">Explore</a>
+          </div>
+
+        </div>
+
+    <!-- Portfolio Goal -->
     <div class="dashboard">
         <div class="card">
-            <h2>📡 Network Scanner</h2>
-            <p>A simple web scanner app using Cron + Nmap + PHP.</p>
-            <p class="tech-stack">Tech Stack: Ubuntu, Apache2, PHP, Nmap, Cron</p>
-            <a href="/scan">View Project</a>
-        </div>
-        <div class="card">
-            <h2>⚙️ Portfolio Dashboard</h2>
-            <p>Interactive dashboard showcasing projects and monitoring progress.</p>
-            <p class="tech-stack">Tech Stack: Flask, Python, SQLite, Chart.js</p>
-            <a href="/dashboard">View Project</a>
+            <h2>⚙️ Dashboard</h2>
+            <p>with authorized access only.</p>
+            <a href="/me/dashboard">View Project</a>
         </div>
     </div>
 </body>

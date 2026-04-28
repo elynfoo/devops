@@ -10,14 +10,16 @@
         }
         nav {
             background-color: #333;
-            padding: 10px;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* left vs right */
+            align-items: center;
         }
         nav ul {
             list-style-type: none;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
         }
         nav ul li {
             margin: 0 15px;
@@ -74,15 +76,23 @@
 <body>
     <!-- Navigation Bar -->
     <nav>
+        <!-- Left side links -->
         <ul>
             <li><a href="/me/python">Python</a></li>
             <li><a href="/me/linux">Linux</a></li>
             <li><a href="/me/devops">DevOps</a></li>
             <li><a href="/me/others">Others</a></li>
         </ul>
+        <!-- Right side login/logout -->
+        <ul>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('logout') }}">Log out</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Log in</a></li>
+            {% endif %}
+        </ul>
     </nav>
 
-    <h1>TBU</h1>
-
+    <h1>Updating..dashboard</h1>
 </body>
 </html>
