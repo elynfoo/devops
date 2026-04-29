@@ -1,3 +1,4 @@
+import os
 from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, LoginManager, UserMixin, current_user, login_required, logout_user
@@ -8,8 +9,10 @@ app.config["DEBUG"] = True
 
 comments = []
 
-#configure SQLite
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/elynfoo/comments.db"
+# configure SQLite using a local file path
+basedir = os.path.abspath(os.path.dirname(__file__))
+database_path = os.path.join(basedir, "comments.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 

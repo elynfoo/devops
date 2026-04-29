@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 
@@ -8,7 +9,9 @@ app = Flask(__name__)
 # Database Models
 # ----------------------
 # Configure SQLite database
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/elynfoo/ecommerce.db"
+basedir = os.path.abspath(os.path.dirname(__file__))
+database_path = os.path.join(basedir, "ecommerce.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
