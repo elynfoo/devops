@@ -11,12 +11,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source
 COPY . /app
 
-# Flask app setup
-ENV FLASK_APP=app.py:application
+# Flask app setup (using python directly since it's a DispatcherMiddleware)
 ENV FLASK_ENV=development
 
 # Expose port 5000 for the Flask app
 EXPOSE 5000
 
-# Start the Flask development server on all interfaces
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+# Start the app using python (not flask run, since it's not a standard Flask app)
+CMD ["python", "app.py"]

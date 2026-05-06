@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, redirect, url_for, request, abort
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from functools import wraps
@@ -11,7 +12,9 @@ app.config["DEBUG"] = True
 app.secret_key = "supersecret"   # required for sessions
 
 # Configure SQLite with SQLAlchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/elynfoo/portfolio.db"
+basedir = os.path.abspath(os.path.dirname(__file__))
+database_path = os.path.join(basedir, "portfolio.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", f"sqlite:///{database_path}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -40,7 +43,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     role = db.Column(db.String(20), nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -52,6 +55,11 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+# -----------------------------
+# Initialize database tables
+with app.app_context():
+    db.create_all()
 
 # -----------------------------
 # Role-based decorator

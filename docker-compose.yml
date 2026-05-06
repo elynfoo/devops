@@ -1,13 +1,34 @@
-version: '3.9'
 services:
-  web:
+  db:
+    image: postgres:15-alpine
+    container_name: flask-db
+    environment:
+      POSTGRES_USER: flaskuser
+      POSTGRES_PASSWORD: flaskpass
+      POSTGRES_DB: flaskapp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flaskuser -d flaskapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  flaskapp:
     build: .
+    container_name: my-flask-app
     ports:
       - "5000:5000"
     volumes:
       - .:/app
     environment:
-      - FLASK_APP=app.py:application
       - FLASK_ENV=development
-    command: flask run --host=0.0.0.0 --port=5000
+      - DATABASE_URL=postgresql://flaskuser:flaskpass@db:5432/flaskapp
+    command: python app.py
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  pgdata:
