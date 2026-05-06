@@ -8,9 +8,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  dockerHubUsername: elynfoo
-  imageName: devops-flaskapp
-  imageTag: $(Build.BuildId)
+  imageName: elynfoo/devops-flaskapp
 
 stages:
   - stage: Build
@@ -19,38 +17,13 @@ stages:
       - job: BuildPush
         displayName: Build and Push to Docker Hub
         steps:
-          - task: Docker@2
-            displayName: Build Docker image
+          - task: DockerInstaller@0
             inputs:
-              command: build
-              dockerfile: Dockerfile
-              repository: $(dockerHubUsername)/$(imageName)
-              tags: |
-                $(imageTag)
-                latest
+              dockerVersion: '27.0.3'
 
-          - task: Docker@2
-            displayName: Push to Docker Hub
-            inputs:
-              command: push
-              containerRegistry: DockerHubConnection
-              repository: $(dockerHubUsername)/$(imageName)
-              tags: |
-                $(imageTag)
-                latest
-
-  - stage: Deploy
-    displayName: Deploy to Kubernetes
-    dependsOn: Build
-    jobs:
-      - job: Deploy
-        displayName: Apply Kubernetes Manifests
-        steps:
-          - task: KubernetesManifest@1
-            displayName: Deploy to Kubernetes
-            inputs:
-              action: deploy
-              manifests: |
-                k8s/deployment.yaml
-                k8s/service.yaml
-              containers: $(dockerHubUsername)/$(imageName):$(imageTag)
+          - script: |
+              echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
+              docker build -t $(imageName):$(Build.BuildId) -t $(imageName):latest .
+              docker push $(imageName):$(Build.BuildId)
+              docker push $(imageName):latest
+            displayName: Build and Push to Docker Hub
