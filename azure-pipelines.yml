@@ -17,13 +17,21 @@ stages:
       - job: BuildPush
         displayName: Build and Push to Docker Hub
         steps:
-          - task: DockerInstaller@0
-            inputs:
-              dockerVersion: '27.0.3'
-
           - script: |
               echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
               docker build -t $(imageName):$(Build.BuildId) -t $(imageName):latest .
               docker push $(imageName):$(Build.BuildId)
               docker push $(imageName):latest
             displayName: Build and Push to Docker Hub
+
+  - stage: Deploy
+    displayName: Deploy to Kubernetes
+    dependsOn: Build
+    jobs:
+      - job: Deploy
+        displayName: Deploy to minikube
+        steps:
+          - script: |
+              kubectl set image deployment/flask-portfolio flask-portfolio=$(imageName):$(Build.BuildId)
+              kubectl rollout status deployment/flask-portfolio
+            displayName: Update Kubernetes Deployment
