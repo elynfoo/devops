@@ -33,6 +33,6 @@ stages:
         displayName: Deploy to minikube
         steps:
           - script: |
-              kubectl set image deployment/flask-portfolio flask-portfolio=$(imageName):$(Build.BuildId)
-              kubectl rollout status deployment/flask-portfolio
+              kubectl set image deployment/flask-portfolio flask-portfolio=$(imageName):$(Build.BuildId) --validate=false
+              kubectl rollout status deployment/flask-portfolio --timeout=120s
             displayName: Update Kubernetes Deployment
