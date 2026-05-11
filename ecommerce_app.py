@@ -10,7 +10,7 @@ app = Flask(__name__)
 # ----------------------
 # Configure SQLite database
 basedir = os.path.abspath(os.path.dirname(__file__))
-database_path = os.path.join(basedir, "ecommerce.db")
+database_path = os.path.join(basedir, "data", "ecommerce.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", f"sqlite:///{database_path}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
