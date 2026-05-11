@@ -32,8 +32,13 @@ stages:
       - job: Deploy
         displayName: Deploy to minikube
         steps:
-          - script: |
+          - powershell: |
+              $env:KUBECONFIG = "C:\Users\flyfyl\.kube\config"
+              minikube update-context
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
               kubectl config use-context minikube
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
               kubectl set image deployment/flask-portfolio flask-portfolio=$(imageName):$(Build.BuildId) -n default
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
               kubectl rollout status deployment/flask-portfolio -n default --timeout=120s
             displayName: Update Kubernetes Deployment
