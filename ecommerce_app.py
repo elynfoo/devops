@@ -137,17 +137,15 @@ def confirmation():
 # Initialize Database
 # ----------------------
 with app.app_context():
-        db.create_all()
+    db.create_all()
+    if Product.query.count() == 0:
+        sample_products = [
+            Product(name="Laptop", price=9.99),
+            Product(name="Headphones", price=19.99),
+            Product(name="Smartphone", price=99.99),
+        ]
+        db.session.add_all(sample_products)
+        db.session.commit()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-        # Add sample products if none exist
-        if Product.query.count() == 0:
-            sample_products = [
-                Product(name="Laptop", price=9.99),
-                Product(name="Headphones", price=19.99),
-                Product(name="Smartphone", price=99.99),
-            ]
-            db.session.add_all(sample_products)
-            db.session.commit()
     app.run(debug=True)
