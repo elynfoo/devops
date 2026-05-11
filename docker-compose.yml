@@ -3,13 +3,13 @@ services:
     image: postgres:15-alpine
     container_name: flask-db
     environment:
-      POSTGRES_USER: flaskuser
-      POSTGRES_PASSWORD: flaskpass
-      POSTGRES_DB: flaskapp
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flaskuser -d flaskapp"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
       - .:/app
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=postgresql://flaskuser:flaskpass@db:5432/flaskapp
+      - DATABASE_URL=${DATABASE_URL}
     command: python app.py
     depends_on:
       db:
