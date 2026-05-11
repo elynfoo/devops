@@ -33,6 +33,9 @@ stages:
         displayName: Deploy to minikube
         steps:
           - script: |
-              kubectl patch deployment flask-portfolio -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"flask-portfolio\",\"image\":\"$(imageName):$(Build.BuildId)\"}]}}}}"
-              kubectl rollout status deployment/flask-portfolio --timeout=120s
+              kubectl config current-context
+              kubectl cluster-info
+              kubectl get deployments -n default
+              kubectl set image deployment/flask-portfolio flask-portfolio=$(imageName):$(Build.BuildId) -n default
+              kubectl rollout status deployment/flask-portfolio -n default --timeout=120s
             displayName: Update Kubernetes Deployment
