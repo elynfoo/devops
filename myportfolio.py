@@ -13,7 +13,7 @@ app.secret_key = "supersecret"   # required for sessions
 
 # Configure SQLite with SQLAlchemy
 basedir = os.path.abspath(os.path.dirname(__file__))
-database_path = os.path.join(basedir, "portfolio.db")
+database_path = os.path.join(basedir, "data", "portfolio.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", f"sqlite:///{database_path}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
