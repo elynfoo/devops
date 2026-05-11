@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run this once to create the Kubernetes secret.
 # Do NOT commit actual credentials — copy .env.example to .env and fill in real values.
-set -euo pipefail
+set -eu
 
 if [ ! -f .env ]; then
   echo "Error: .env file not found. Copy .env.example and fill in real values."
