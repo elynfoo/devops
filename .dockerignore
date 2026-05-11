@@ -11,3 +11,9 @@ dist/
 .gitignore
 Dockerfile
 docker-compose.yml
+In Azure Cloud Shell:
+
+-----------------------------------
+az aks start --resource-group flask-portfolio-rg --name flask-portfolio-aks
+az aks get-credentials --resource-group flask-portfolio-rg --name flask-portfolio-aks
+az aks stop --resource-group flask-portfolio-rg --name flask-portfolio-aks
