@@ -1,7 +1,7 @@
 # Flask Portfolio — DevOps Project
 
 A multi-app Flask project containerized with Docker, migrated to PostgreSQL,
-deployed to Kubernetes (minikube + AKS), and automated with an Azure DevOps CI/CD pipeline.
+deployed to Kubernetes (Docker Desktop + minikube + AKS), and automated with an Azure DevOps CI/CD pipeline.
 
 ---
 
@@ -25,6 +25,7 @@ All three apps run under one Flask server using `DispatcherMiddleware`.
 | **Docker Image** | The recipe for the lunchbox |
 | **Docker Hub** | A shop where you store and share your lunchbox recipes |
 | **Kubernetes** | A manager that runs and watches your lunchboxes — restarts them if they crash |
+| **Docker Desktop K8s** | Kubernetes built into Docker Desktop — easiest way to run K8s locally |
 | **Pod** | One running lunchbox (container) inside Kubernetes |
 | **Service** | The address/door to reach your pod from outside |
 | **Deployment** | Tells Kubernetes how many pods to run and which image to use |
@@ -44,7 +45,7 @@ All three apps run under one Flask server using `DispatcherMiddleware`.
 | Framework | Flask, Flask-SQLAlchemy, Flask-Login |
 | Database | PostgreSQL (migrated from SQLite) |
 | Containerization | Docker, Docker Compose |
-| Orchestration | Kubernetes (minikube locally, AKS in cloud) |
+| Orchestration | Kubernetes (Docker Desktop locally, minikube, AKS in cloud) |
 | Container Registry | Docker Hub (`elynfoo/devops-flaskapp`) |
 | CI/CD | Azure DevOps Pipelines (self-hosted agent) |
 | Cloud | Azure Kubernetes Service (AKS) |
@@ -62,13 +63,15 @@ devops/
 ├── aboutme_app.py            # About me app
 ├── requirements.txt          # Python dependencies
 ├── Dockerfile                # Docker image build instructions
-├── docker-compose.yml        # Local development with PostgreSQL
+├── docker-compose.yml        # Local development with PostgreSQL (uses .env)
 ├── azure-pipelines.yml       # CI/CD pipeline definition
+├── .env.example              # Credential template — copy to .env and fill in values
+├── .env                      # Local credentials — gitignored, never committed
 ├── k8s/
 │   ├── deployment.yaml       # Flask app Kubernetes Deployment
 │   ├── service.yaml          # LoadBalancer Service (port 5000)
 │   ├── postgres.yaml         # PostgreSQL Deployment + PVC + Service
-│   └── secret.yaml           # Database credentials secret
+│   └── create-secret.sh      # Creates flask-db-secret from .env (replaces secret.yaml)
 └── templates/
     ├── ecommerce/            # E-commerce HTML templates
     ├── flaskwebsite/         # Blog HTML templates
@@ -127,7 +130,13 @@ Used for **local development** only. Spins up two services:
 - `db` — PostgreSQL 15 with health check
 - `flaskapp` — Flask app connected to PostgreSQL
 
+Credentials are loaded from `.env` — never hardcoded:
+
 ```bash
+# First time setup
+cp .env.example .env
+# Edit .env and set real passwords
+
 # Start locally
 docker compose up --build
 
@@ -139,16 +148,31 @@ docker compose down
 
 ## Kubernetes Setup
 
-### Secret (`k8s/secret.yaml`)
-Stores database credentials — never hardcoded in code:
-```yaml
-DATABASE_URL: postgresql://flaskuser:flaskpass@postgres-service:5432/flaskapp
+### Secrets
+Credentials are never stored in YAML files committed to git.
+`k8s/secret.yaml` is gitignored. Instead, create secrets from your local `.env`:
+
+```bash
+# Creates/updates flask-db-secret in the active cluster
+bash k8s/create-secret.sh
 ```
 
-Apply with:
+For Docker Hub private image access, create the pull secret once:
+
 ```bash
-kubectl apply -f k8s/secret.yaml
+kubectl create secret docker-registry dockerhub-secret \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username=<username> \
+  --docker-password=<access-token> \
+  --docker-email=<email>
 ```
+
+Both secrets are required before deploying:
+
+| Secret | Type | Used by |
+| --- | --- | --- |
+| `flask-db-secret` | `Opaque` | Flask app + Postgres |
+| `dockerhub-secret` | `kubernetes.io/dockerconfigjson` | Flask deployment image pull |
 
 ### PostgreSQL (`k8s/postgres.yaml`)
 - Deployment: `postgres:15-alpine`
@@ -192,25 +216,55 @@ pool: Default (self-hosted agent)
 
 ---
 
-## Local Kubernetes (Minikube)
+## Local Kubernetes
+
+### Docker Desktop (recommended for local dev)
+
+Enable Kubernetes in Docker Desktop → Settings → Kubernetes → Enable Kubernetes.
+Shares the same Docker engine so images are already available locally.
 
 ```bash
-# Start minikube
-minikube start --driver=docker
+# Switch context
+kubectl config use-context docker-desktop
 
-# Apply all manifests
-kubectl apply -f k8s/secret.yaml
+# Create secrets (first time only)
+bash k8s/create-secret.sh
+kubectl create secret docker-registry dockerhub-secret \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username=elynfoo \
+  --docker-password=<access-token> \
+  --docker-email=<email>
+
+# Deploy
 kubectl apply -f k8s/postgres.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
-
-# Expose LoadBalancer (separate terminal)
-minikube tunnel
 
 # Check pods
 kubectl get pods
 kubectl get services
 ```
+
+### Minikube (alternative)
+
+```bash
+# Start minikube
+minikube start --driver=docker
+
+# Switch context
+kubectl config use-context minikube
+
+# Apply secrets and manifests (same as above)
+
+# Expose LoadBalancer (separate terminal)
+minikube tunnel
+```
+
+| | Docker Desktop | Minikube |
+| --- | --- | --- |
+| Setup | One checkbox in Docker Desktop | Separate install |
+| Resource usage | Lighter — shares Docker engine | Heavier — own VM |
+| Best for | Already using Docker Desktop | Multi-node, closer to real cluster |
 
 ---
 
@@ -263,6 +317,10 @@ Live App: http://40.90.189.161:5000
 | PostgreSQL PGDATA error | `lost+found` in PVC mount on AKS | Added `PGDATA=/var/lib/postgresql/data/pgdata` |
 | Exec format error on AKS | `Standard_B2pls_v2` is ARM64, image is AMD64 | Recreated cluster with `Standard_B2als_v2` |
 | Products not showing | Sample data only seeded in `__main__` block | Moved seeding to `with app.app_context()` block |
+| Plaintext creds in git | `secret.yaml` committed with `stringData` values | Deleted `secret.yaml`, gitignored it, use `create-secret.sh` + `.env` |
+| Duplicate deployment name | `flask.yaml` and `deployment.yaml` both named `flask-portfolio` | Deleted `flask.yaml`, kept separate `deployment.yaml` + `service.yaml` |
+| `create-secret.sh` fails on Windows | CRLF line endings break bash `set` options | Run `kubectl create secret` directly via PowerShell instead |
+| `docker compose` uses wrong creds | Passwords hardcoded in `docker-compose.yml` | Replaced with `${VAR}` references loaded from `.env` |
 
 ---
 
@@ -270,7 +328,12 @@ Live App: http://40.90.189.161:5000
 
 - Always bind Flask to `0.0.0.0` inside Docker, not `127.0.0.1`
 - Use `imagePullPolicy: Always` so Kubernetes fetches the latest image
-- Never hardcode secrets — use Kubernetes Secrets and env vars
+- Never hardcode secrets — use Kubernetes Secrets and env vars; never commit `secret.yaml`
+- Use `.env` + `.env.example` for local credentials; gitignore `.env`
+- Create K8s secrets imperatively (`kubectl create secret`) not declaratively from a committed YAML
+- Docker Desktop K8s is easier for local dev than minikube — shares the same Docker engine
+- Duplicate manifest resource names cause silent overwrites — each resource name must be unique across files
+- Shell scripts with CRLF line endings fail on Windows bash — use PowerShell or convert to LF
 - `PGDATA` must be set to a subdirectory to avoid conflicts with PVC mount
 - AKS node VM architecture must match Docker image architecture (AMD64 vs ARM64)
 - Self-hosted agents need interactive session to access Docker Desktop
