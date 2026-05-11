@@ -21,11 +21,7 @@ db = SQLAlchemy(app)
 #   from myportfolio import db
 #   from myportfolio import User
 #   User.query.all()
-# SQLite Shell
 #   db.create_all()
-#   sqlite3 /home/elynfoo/portfolio.db
-#   .tables
-#   .schema user
 #   SELECT * FROM user;
 
 # -----------------------------
