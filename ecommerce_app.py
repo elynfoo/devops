@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -12,34 +12,39 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+
 # Define Product model
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float, nullable=False)
 
-# add to cart
+
+# Add to cart
 class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"))
     quantity = db.Column(db.Integer, default=1)
     product = db.relationship("Product")
 
-# add customer detail
+
+# Add customer detail
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(200), nullable=False)
 
-#add an order model
+
+# Add an order model
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"))
     customer = db.relationship("Customer", backref="orders")
     total = db.Column(db.Float, nullable=False)
 
-#track product in each order
+
+# Track product in each order
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey("order.id"))
@@ -48,6 +53,7 @@ class OrderItem(db.Model):
 
     order = db.relationship("Order", backref="items")
     product = db.relationship("Product")
+
 
 # ----------------------
 # Routes
@@ -58,6 +64,7 @@ def home():
     products = Product.query.all()
     return render_template("ecommerce/home.html", products=products)
 
+
 # Add product to cart
 @app.route("/add_to_cart/<int:product_id>")
 def add_to_cart(product_id):
@@ -65,6 +72,7 @@ def add_to_cart(product_id):
     db.session.add(item)
     db.session.commit()
     return redirect(url_for("cart"))
+
 
 # View cart
 @app.route("/cart")
@@ -82,7 +90,6 @@ def clear_cart():
     return redirect(url_for('cart'))
 
 
-
 @app.route("/checkout", methods=["GET", "POST"])
 def checkout():
     if request.method == "POST":
@@ -97,13 +104,14 @@ def checkout():
         # Save customer
         customer = Customer(name=name, email=email, address=address)
         db.session.add(customer)
-        db.session.commit() # commit so order.id is available
-        # ✅ Create and commit order first
+        db.session.commit()  # commit so customer.id is available
+
+        # Create and commit order first
         order = Order(customer_id=customer.id, total=total)
         db.session.add(order)
-        db.session.commit()   # ensures order.id exists
+        db.session.commit()  # ensures order.id exists
 
-        # ✅ Now add order items linked to this order
+        # Now add order items linked to this order
         for item in items:
             order_item = OrderItem(
                 order_id=order.id,
