@@ -19,7 +19,7 @@ stages:
         steps:
           - script: |
               pip install flake8
-              flake8 . --exclude=venv,__pycache__ --max-line-length=120
+              python -m flake8 . --exclude=venv,__pycache__ --max-line-length=120
             displayName: Run flake8 on Python files
 
   - stage: Build
