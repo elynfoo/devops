@@ -11,8 +11,20 @@ variables:
   imageName: elynfoo/devops-flaskapp
 
 stages:
+  - stage: Lint
+    displayName: Lint Python Code
+    jobs:
+      - job: Lint
+        displayName: Run flake8
+        steps:
+          - script: |
+              pip install flake8
+              flake8 . --exclude=venv,__pycache__ --max-line-length=120
+            displayName: Run flake8 on Python files
+
   - stage: Build
     displayName: Build and Push Docker Image
+    dependsOn: Lint
     jobs:
       - job: BuildPush
         displayName: Build and Push to Docker Hub
@@ -30,7 +42,7 @@ stages:
     dependsOn: Build
     jobs:
       - job: Deploy
-        displayName: Deploy to minikube
+        displayName: Deploy to AKS
         steps:
           - powershell: |
               $env:KUBECONFIG = "C:\agent\kube.config"
