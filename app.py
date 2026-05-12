@@ -3,12 +3,10 @@ from werkzeug.serving import run_simple
 
 from aboutme_app import app as appA
 from flaskb_app import app as appB
-from myportfolio import app as appC
 from ecommerce_app import app as appD
 
 application = DispatcherMiddleware(appA, {
     '/flaskwebsite': appB,
-    '/me': appC,
     '/ecommerce': appD
 })
 
