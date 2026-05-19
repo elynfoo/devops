@@ -1,0 +1,53 @@
+name: Lint, Build, and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+
+env:
+  IMAGE_NAME: elynfoo/devops-flaskapp
+
+jobs:
+  lint:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run flake8
+        run: |
+          pip install flake8
+          python -m flake8 . --exclude=venv,__pycache__ --max-line-length=120
+
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.run_number }}
+            ${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Update deployment image
+        env:
+          KUBECONFIG: C:\agent\kube.config
+        run: |
+          kubectl set image deployment/flask-portfolio flask-portfolio=${{ env.IMAGE_NAME }}:${{ github.run_number }} -n default
+          kubectl rollout status deployment/flask-portfolio -n default --timeout=120s

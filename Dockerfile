@@ -18,4 +18,4 @@ ENV FLASK_ENV=development
 EXPOSE 5000
 
 # Start the app using python (not flask run, since it's not a standard Flask app)
-CMD ["python", "app.py"]
+CMD ["python", "app/app.py"]
