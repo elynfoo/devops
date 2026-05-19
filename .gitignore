@@ -1,4 +1,23 @@
+# Python
+venv/
+__pycache__/
 *.pyc
-__pycache__
+
+# Secrets
 .env
+
+# Logs
+logs/
+
+# Flask
+instance/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Kubernetes secrets
 k8s/secret.yaml
