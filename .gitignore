@@ -3,21 +3,21 @@ venv/
 __pycache__/
 *.pyc
 
+# OS
+.DS_Store
+
 # Secrets
 .env
+
+# IDE
+.idea/
+.vscode/
 
 # Logs
 logs/
 
 # Flask
 instance/
-
-# OS
-.DS_Store
-
-# IDE
-.vscode/
-.idea/
 
 # Kubernetes secrets
 k8s/secret.yaml
