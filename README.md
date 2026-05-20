@@ -1,7 +1,7 @@
 # Flask Portfolio — DevOps Project
 
 A multi-app Flask project containerized with Docker, migrated to PostgreSQL,
-deployed to Kubernetes (Docker Desktop + minikube + AKS), and automated with an Azure DevOps CI/CD pipeline.
+deployed to Azure Kubernetes Service (AKS), and automated with an Azure DevOps CI/CD pipeline.
 
 ---
 
@@ -45,7 +45,7 @@ All three apps run under one Flask server using `DispatcherMiddleware`.
 | Framework | Flask, Flask-SQLAlchemy, Flask-Login |
 | Database | PostgreSQL (migrated from SQLite) |
 | Containerization | Docker, Docker Compose |
-| Orchestration | Kubernetes (Docker Desktop locally, minikube, AKS in cloud) |
+| Orchestration | Kubernetes (AKS on Azure) |
 | Container Registry | Docker Hub (`elynfoo/devops-flaskapp`) |
 | CI/CD | Azure DevOps Pipelines (self-hosted agent) |
 | Cloud | Azure Kubernetes Service (AKS) |
@@ -56,26 +56,27 @@ All three apps run under one Flask server using `DispatcherMiddleware`.
 
 ```
 devops/
-├── app.py                    # Entry point — combines all 3 Flask apps
-├── ecommerce_app.py          # E-commerce Flask app
-├── myportfolio.py            # Portfolio Flask app
-├── flaskb_app.py             # Blog Flask app
-├── aboutme_app.py            # About me app
-├── requirements.txt          # Python dependencies
-├── Dockerfile                # Docker image build instructions
-├── docker-compose.yml        # Local development with PostgreSQL (uses .env)
-├── azure-pipelines.yml       # CI/CD pipeline definition
-├── .env.example              # Credential template — copy to .env and fill in values
-├── .env                      # Local credentials — gitignored, never committed
+├── app/
+│   ├── app.py                # Entry point — combines all 3 Flask apps via DispatcherMiddleware
+│   ├── ecommerce_app.py      # E-commerce Flask app
+│   ├── flaskb_app.py         # Blog Flask app
+│   └── aboutme_app.py        # About me / portfolio app
+├── templates/                # Shared HTML templates (all apps point here)
+│   ├── ecommerce/            # E-commerce templates
+│   └── flaskwebsite/         # Blog templates
+├── static/                   # Shared CSS, JS, images
 ├── k8s/
 │   ├── deployment.yaml       # Flask app Kubernetes Deployment
 │   ├── service.yaml          # LoadBalancer Service (port 5000)
 │   ├── postgres.yaml         # PostgreSQL Deployment + PVC + Service
-│   └── create-secret.sh      # Creates flask-db-secret from .env (replaces secret.yaml)
-└── templates/
-    ├── ecommerce/            # E-commerce HTML templates
-    ├── flaskwebsite/         # Blog HTML templates
-    └── portfolio/            # Portfolio HTML templates
+│   └── create-secret.sh      # Creates flask-db-secret from .env
+├── Dockerfile                # Docker image build instructions
+├── docker-compose.yml        # Local development with PostgreSQL (uses .env)
+├── azure-pipelines.yml       # CI/CD pipeline definition
+├── requirements.txt          # Python dependencies
+├── .env.example              # Credential template — copy to .env and fill in values
+├── .env                      # Local credentials — gitignored, never committed
+└── .gitignore                # Excludes venv, __pycache__, .env, logs, instance
 ```
 
 ---
@@ -89,15 +90,18 @@ Azure DevOps detects push (trigger: main, feature/*)
         ↓
 Self-hosted Agent (local PC) runs pipeline
         ↓
-Stage 1 — BUILD:
+Stage 1 — LINT:
+  flake8 checks Python code style
+        ↓
+Stage 2 — BUILD:
   docker login → docker build → docker push to Docker Hub
         ↓
-Stage 2 — DEPLOY:
-  kubectl set image → kubectl rollout status
+Stage 3 — DEPLOY:
+  AKS service connection → kubectl apply → kubectl rollout status
         ↓
 Kubernetes pulls new image from Docker Hub
         ↓
-App live at http://<public-ip>:5000
+App live at http://40.90.189.161:5000
 ```
 
 ---
@@ -204,67 +208,56 @@ pool: Default (self-hosted agent)
 2. Build image tagged with `$(Build.BuildId)` and `latest`
 3. Push both tags to Docker Hub
 
-### Stage 2 — Deploy
-1. `kubectl set image` — updates the deployment with new build ID tag
-2. `kubectl rollout status` — waits and confirms deployment succeeded
+### Stage 3 — Deploy
+
+1. Connects to AKS via `flask-portfolio-aks-connection` service connection
+2. Applies `k8s/deployment.yaml` to `flask-portfolio-aks` cluster in `flask-portfolio-rg`
+3. Kubernetes pulls new image and rolls out the update
 
 ### Secret Variables (Azure DevOps)
-| Variable | Value |
-|----------|-------|
-| `DOCKER_USERNAME` | `elynfoo` |
+
+| Variable     | Value                        |
+|--------------|------------------------------|
+| `DOCKER_USERNAME` | `elynfoo`               |
 | `DOCKER_PASSWORD` | Docker Hub password (masked) |
+
+### Service Connection
+
+| Name                             | Type                    | Target                                        |
+|----------------------------------|-------------------------|-----------------------------------------------|
+| `flask-portfolio-aks-connection` | Azure Resource Manager  | `flask-portfolio-rg` / `flask-portfolio-aks`  |
 
 ---
 
-## Local Kubernetes
+## Local Development
 
-### Docker Desktop (recommended for local dev)
-
-Enable Kubernetes in Docker Desktop → Settings → Kubernetes → Enable Kubernetes.
-Shares the same Docker engine so images are already available locally.
+To run the app locally use Docker Compose — no Kubernetes needed:
 
 ```bash
-# Switch context
-kubectl config use-context docker-desktop
+# First time setup
+cp .env.example .env
+# Edit .env and fill in real passwords
 
-# Create secrets (first time only)
-bash k8s/create-secret.sh
-kubectl create secret docker-registry dockerhub-secret \
-  --docker-server=https://index.docker.io/v1/ \
-  --docker-username=elynfoo \
-  --docker-password=<access-token> \
-  --docker-email=<email>
+# Start app + database
+docker compose up --build
 
-# Deploy
-kubectl apply -f k8s/postgres.yaml
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-
-# Check pods
-kubectl get pods
-kubectl get services
+# Stop
+docker compose down
 ```
 
-### Minikube (alternative)
+App will be available at `http://localhost:5000`.
 
-```bash
-# Start minikube
-minikube start --driver=docker
+---
 
-# Switch context
-kubectl config use-context minikube
+## Git Remotes
 
-# Apply secrets and manifests (same as above)
+- `origin` — `dev.azure.com/ElynF/CSD07/_git/Flask-PythonAnywhere` (Primary — Azure DevOps)
+- `github` — `github.com/elynfoo/devops` (Secondary — GitHub)
 
-# Expose LoadBalancer (separate terminal)
-minikube tunnel
+```powershell
+git push              # pushes to Azure DevOps
+git push github main  # pushes to GitHub
 ```
-
-| | Docker Desktop | Minikube |
-| --- | --- | --- |
-| Setup | One checkbox in Docker Desktop | Separate install |
-| Resource usage | Lighter — shares Docker engine | Heavier — own VM |
-| Best for | Already using Docker Desktop | Multi-node, closer to real cluster |
 
 ---
 
